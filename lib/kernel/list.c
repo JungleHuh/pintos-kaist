@@ -157,7 +157,9 @@ void
 list_insert (struct list_elem *before, struct list_elem *elem) {
 	ASSERT (is_interior (before) || is_tail (before));
 	ASSERT (elem != NULL);
-
+	//elem->prev = before->prev; (포인터)  elem의 prev가 가리키는 값을 before의 prev값이 가리키는 것으로 바꿈
+	//elem->next = before; elem->next가 가리키는 것을 before로 바꿈
+	//포인터와 구조체의 차이를 생각해봐야 한다.
 	elem->prev = before->prev;
 	elem->next = before;
 	before->prev->next = elem;

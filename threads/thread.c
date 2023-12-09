@@ -62,6 +62,7 @@ static void init_thread (struct thread *, const char *name, int priority);
 static void do_schedule(int status);
 static void schedule (void);
 static tid_t allocate_tid (void);
+static struct list sleep_list;
 
 /* Returns true if T appears to point to a valid thread. */
 #define is_thread(t) ((t) != NULL && (t)->magic == THREAD_MAGIC)
@@ -109,6 +110,7 @@ thread_init (void) {
 	lock_init (&tid_lock);
 	list_init (&ready_list);
 	list_init (&destruction_req);
+	list_init (&sleep_list);
 
 	/* Set up a thread structure for the running thread. */
 	initial_thread = running_thread ();
@@ -216,6 +218,40 @@ thread_create (const char *name, int priority,
    This function must be called with interrupts turned off.  It
    is usually a better idea to use one of the synchronization
    primitives in synch.h. */
+void thread_sleep(int64_t ticks)
+{
+	struct thread * curr;
+	enum intr_level old_level;
+	old_level = intr_disable();
+
+	curr = thread_current();
+	 ASSERT(curr != idle_thread);
+
+	curr->wakeup_ticks = ticks;
+	list_insert_ordered(&sleep_list, &curr->elem, cmp_thread_ticks, NULL);
+	thread_block();
+	intr_set_level(old_level);
+}
+
+void thread_wakeup(int64_t current_ticks)
+{
+	enum intr_level old_level;
+	old_level = intr_disable();
+	struct list_elem *curr_elem = list_begin(&sleep_list);
+	while (curr_elem != list_end(&sleep_list))
+	{
+		struct thread *curr_thread = list_entry(curr_elem, struct thread, elem);
+
+		if (current_ticks >= curr_thread->wakeup_ticks)
+		{
+			curr_elem = list_remove(curr_elem);
+			thread_unblock(curr_thread);
+		}
+		else break;
+	}
+	intr_set_level(old_level);
+}
+
 void
 thread_block (void) {
 	ASSERT (!intr_context ());
@@ -243,6 +279,13 @@ thread_unblock (struct thread *t) {
 	list_push_back (&ready_list, &t->elem);
 	t->status = THREAD_READY;
 	intr_set_level (old_level);
+}
+
+bool cmp_thread_ticks(const struct list_elem *a, const struct list_elem *b, void *aux UNUSED)
+{
+	struct thread *st_a = list_entry(a, struct thread, elem);
+	struct thread *st_b = list_entry(b, struct thread, elem);
+	return st_a->wakeup_ticks < st_b->wakeup_ticks;
 }
 
 /* Returns the name of the running thread. */
