@@ -225,7 +225,7 @@ void thread_sleep(int64_t ticks)
 	old_level = intr_disable();
 
 	curr = thread_current();
-	 ASSERT(curr != idle_thread);
+	ASSERT(curr != idle_thread);
 
 	curr->wakeup_ticks = ticks;
 	list_insert_ordered(&sleep_list, &curr->elem, cmp_thread_ticks, NULL);

@@ -119,7 +119,7 @@ bool cmp_thread_ticks(const struct list_elem *a, const struct list_elem *b, void
 void thread_init (void);
 void thread_start (void);
 void thread_sleep(int64_t ticks);
-  void thread_wakeup (int64_t global_ticks);
+void thread_wakeup (int64_t global_ticks);
 
 void thread_tick (void);
 void thread_print_stats (void);
