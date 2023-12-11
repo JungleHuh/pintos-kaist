@@ -96,6 +96,11 @@ struct thread {
 	struct list_elem elem;              /* List element. */
 	int64_t wakeup_ticks;
 
+	int init_priority;
+	struct lock *wait_on_lock;
+	struct list donations;
+	struct list_elem donation_elem;
+
 #ifdef USERPROG
 	/* Owned by userprog/process.c. */
 	uint64_t *pml4;                     /* Page map level 4 */
@@ -115,6 +120,12 @@ struct thread {
    Controlled by kernel command-line option "-o mlfqs". */
 extern bool thread_mlfqs;
 bool cmp_thread_ticks(const struct list_elem *a, const struct list_elem *b, void *aux);
+bool cmp_thread_priority(const struct list_elem *a, const struct list_elem *b, void *aux UNUSED);
+bool cmp_sema_priority(const struct list_elem *a, const struct list_elem *b, void *aux);
+bool cmp_donation_priority(const struct list_elem *a, const struct list_elem *b, void *aux);
+void donate_priority(void);
+void remove_donor(struct lock *lock);
+void update_priority(void);
 
 void thread_init (void);
 void thread_start (void);
@@ -146,5 +157,7 @@ int thread_get_recent_cpu (void);
 int thread_get_load_avg (void);
 
 void do_iret (struct intr_frame *tf);
+void preempt_priority(void);
+void donate_priority(void);
 
 #endif /* threads/thread.h */
