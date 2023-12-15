@@ -581,7 +581,7 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 	return true;
 }
 
-/* Create a minimal stack by mapping a zeroed page at the USER_STACK */
+/* Create a minimal stack by mapping a zeroed page at the USER_STACK .*/
 static bool
 setup_stack (struct intr_frame *if_) {
 	uint8_t *kpage;
