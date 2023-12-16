@@ -205,6 +205,7 @@ process_exec (void *f_name) {
 }
 
 void argument_stack(char **parse, int count, void **rsp) 
+{
 	for (int i = count - 1; i > -1; i--)
 	{
 		for (int j = strlen(parse[i]); j > -1; j--)
@@ -235,6 +236,7 @@ void argument_stack(char **parse, int count, void **rsp)
 	// return address push
 	(*rsp) -= 8;
 	**(void ***)rsp = 0;
+}
 }
 
 /* Waits for thread TID to die and returns its exit status.  If
